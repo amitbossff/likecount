@@ -84,6 +84,11 @@
       color: #e74c3c;
     }
 
+    .unknown {
+      border-color: #e74c3c !important;
+      color: #e74c3c !important;
+    }
+
     .not-found a {
       color: #ff8a8a;
       text-decoration: underline;
@@ -208,18 +213,26 @@
         } else {
           const videoUrl = `https://youtu.be/${videoId}`;
           try {
-            const [channelTitle, publishedAt] = await Promise.all([
+            const [rawChannelTitle, publishedAt] = await Promise.all([
               fetchChannelTitle(videoId),
               fetchPublishedTime(videoId)
             ]);
 
-            const relativeTime = publishedAt ? getRelativeTime(publishedAt) : "Unknown";
+            const isUnknown = rawChannelTitle === "Unknown" || !publishedAt;
 
-            div.classList.add("found");
+            const channelTitle = rawChannelTitle !== "Unknown"
+              ? `<span style="color:#2ecc71; text-decoration:underline;">${rawChannelTitle}</span>`
+              : `<span style="color:#e74c3c; font-weight:bold;">NOT FOUND❌ </span>`;
+
+            const relativeTime = publishedAt
+              ? getRelativeTime(publishedAt)
+              : '<span style="color:#e74c3c;font-weight:bold;"></span>';
+
+            div.classList.add(isUnknown ? "unknown" : "found");
             div.innerHTML = `
-              ${serialHTML} ✅ 
-              <a href="${videoUrl}" target="_blank" style="color:#2ecc71; text-decoration:underline;">${channelTitle}</a><br>
-              ⏱️ ${relativeTime}<br>
+              ${serialHTML} 
+              <a href="${videoUrl}" target="_blank">${channelTitle}</a><br>
+              <span style="color:#888;font-weight:bold;"></span>👉 ${relativeTime}<br>
               <span style="color:#ffd700;cursor:pointer;text-decoration:underline;" onclick="showLikes(this, '${videoId}')">👆 Tap to view likes</span>
             `;
           } catch {
