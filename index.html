@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AmitTG</title>
+  <title>AmitTG ❤️</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Firebase -->
@@ -108,7 +108,7 @@
 </head>
 <body>
 
-  <h2>AmitTG</h2>
+  <h2>AmitTG❤️‍🔥</h2>
 
   <textarea id="ytLinks" placeholder="1 https://youtu.be/xyz1234..."></textarea>
   <button onclick="checkAllVideos()">Track Video</button>
@@ -121,21 +121,14 @@
     const firebaseConfig = {
       apiKey: "AIzaSyDOSmFSpbsfXveaDpozsjDwTbc3yjmcAhg",
       authDomain: "amittg-tool.firebaseapp.com",
-      databaseURL: "https://amittg-tool-default-rtdb.firebaseio.com",
       projectId: "amittg-tool",
-      storageBucket: "amittg-tool.appspot.com",
-      messagingSenderId: "873427375036",
-      appId: "1:873427375036:web:315252c835a9dcf6f111b9",
-      measurementId: "G-JTD2DS401H"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const ytCollection = db.collection("youtube_links");
-
     const textarea = document.getElementById("ytLinks");
 
-    // 📥 Load Firestore links
     ytCollection.orderBy("timestamp", "asc").onSnapshot(snapshot => {
       const docs = snapshot.docs.map(doc => ({
         serial: parseInt(doc.data().serial),
@@ -153,7 +146,7 @@
       return match ? match[1] : null;
     }
 
-    // 🕒 Get Relative Time
+    // ⏱️ Relative Time Formatter
     function getRelativeTime(publishedAt) {
       const published = new Date(publishedAt);
       const now = new Date();
@@ -173,7 +166,23 @@
       return `${diffDays} days ago`;
     }
 
-    // ✅ Track all videos
+    // 🎯 Fetch Channel Title
+    async function fetchChannelTitle(videoId) {
+      const apiKey = "AIzaSyBLXwBhG9fcmTBEXrUsrO212k5bg2dtLj0"; // Channel API
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`);
+      const data = await res.json();
+      return data.items?.[0]?.snippet?.channelTitle || "Unknown";
+    }
+
+    // ⏳ Fetch Published Time
+    async function fetchPublishedTime(videoId) {
+      const apiKey = "AIzaSyBWST_qkyw4-c5eP4G9OquFh-3tzi67_J8"; // Time API
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`);
+      const data = await res.json();
+      return data.items?.[0]?.snippet?.publishedAt || null;
+    }
+
+    // ✅ Main Checker
     async function checkAllVideos() {
       const input = textarea.value.trim();
       const lines = input.split("\n").filter(Boolean);
@@ -202,26 +211,20 @@
         } else {
           const videoUrl = `https://youtu.be/${videoId}`;
           try {
-            const api = `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,status&id=${videoId}&key=AIzaSyC_PW7C_ZgD5wIJ_SzHyXNdEqp3hfwIs9g`;
-            const res = await fetch(api);
-            const data = await res.json();
+            const [channelTitle, publishedAt] = await Promise.all([
+              fetchChannelTitle(videoId),
+              fetchPublishedTime(videoId)
+            ]);
 
-            if (data.items && data.items.length > 0 && data.items[0].status.uploadStatus !== "deleted") {
-              const video = data.items[0];
-              const channelTitle = video.snippet.channelTitle;
-              const relativeTime = getRelativeTime(video.snippet.publishedAt);
+            const relativeTime = publishedAt ? getRelativeTime(publishedAt) : "Unknown";
 
-              div.classList.add("found");
-              div.innerHTML = `
-                ${serial}. ✅ <a href="${videoUrl}" target="_blank" style="color:#2ecc71; text-decoration:underline;">${channelTitle}</a><br>
-                ⏱️ ${relativeTime}<br>
-                <span style="color:#ffd700;cursor:pointer;text-decoration:underline;" onclick="showLikes(this, '${videoId}')">👆 Tap to view likes</span>
-              `;
-            } else {
-              div.classList.add("not-found");
-              div.innerHTML = `${serial}. ❌ Not Found<br><a href="${videoUrl}" target="_blank">${videoUrl}</a>`;
-            }
-          } catch (e) {
+            div.classList.add("found");
+            div.innerHTML = `
+              ${serial}. ✅ <a href="${videoUrl}" target="_blank" style="color:#2ecc71; text-decoration:underline;">${channelTitle}</a><br>
+              ⏱️ ${relativeTime}<br>
+              <span style="color:#ffd700;cursor:pointer;text-decoration:underline;" onclick="showLikes(this, '${videoId}')">👆 Tap to view likes</span>
+            `;
+          } catch {
             div.classList.add("not-found");
             div.innerHTML = `${serial}. ⚠️ Error checking<br><a href="${videoUrl}" target="_blank">${videoUrl}</a>`;
           }
@@ -233,19 +236,15 @@
       loader.style.display = "none";
     }
 
-    // 👇 Show Likes on Click
+    // 👍 Likes API
     async function showLikes(elem, videoId) {
       elem.textContent = "⏳ Loading likes...";
       try {
-        const likeAPI = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=AIzaSyDXbiFdiB7IzuuPqKrbSfdTg5CUurFknpo`;
+        const likeAPI = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=AIzaSyDXbiFdiB7IzuuPqKrbSfdTg5CUurFknpo`; // Likes API
         const res = await fetch(likeAPI);
         const data = await res.json();
-        if (data.items && data.items.length > 0) {
-          const likes = data.items[0].statistics.likeCount || "0";
-          elem.textContent = `👍 Likes: ${likes}`;
-        } else {
-          elem.textContent = "❌ Could not fetch likes";
-        }
+        const likes = data.items?.[0]?.statistics?.likeCount || "0";
+        elem.textContent = `👍 Likes: ${likes}`;
       } catch {
         elem.textContent = "⚠️ Error fetching likes";
       }
