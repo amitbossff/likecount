@@ -139,14 +139,12 @@
       textarea.value = lines.join("\n");
     });
 
-    // 📦 Extract Video ID
     function extractVideoID(url) {
       const regExp = /(?:v=|youtu\.be\/|embed\/|watch\?v=)([a-zA-Z0-9_-]{11})/;
       const match = url.match(regExp);
       return match ? match[1] : null;
     }
 
-    // ⏱️ Relative Time Formatter
     function getRelativeTime(publishedAt) {
       const published = new Date(publishedAt);
       const now = new Date();
@@ -166,23 +164,20 @@
       return `${diffDays} days ago`;
     }
 
-    // 🎯 Fetch Channel Title
     async function fetchChannelTitle(videoId) {
-      const apiKey = "AIzaSyBLXwBhG9fcmTBEXrUsrO212k5bg2dtLj0"; // Channel API
+      const apiKey = "AIzaSyBLXwBhG9fcmTBEXrUsrO212k5bg2dtLj0";
       const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`);
       const data = await res.json();
       return data.items?.[0]?.snippet?.channelTitle || "Unknown";
     }
 
-    // ⏳ Fetch Published Time
     async function fetchPublishedTime(videoId) {
-      const apiKey = "AIzaSyBWST_qkyw4-c5eP4G9OquFh-3tzi67_J8"; // Time API
+      const apiKey = "AIzaSyBWST_qkyw4-c5eP4G9OquFh-3tzi67_J8";
       const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`);
       const data = await res.json();
       return data.items?.[0]?.snippet?.publishedAt || null;
     }
 
-    // ✅ Main Checker
     async function checkAllVideos() {
       const input = textarea.value.trim();
       const lines = input.split("\n").filter(Boolean);
@@ -205,9 +200,11 @@
         const div = document.createElement("div");
         div.className = "video-block";
 
+        const serialHTML = `<span style="color:#ff4d4d; font-weight:bold;">${serial}.</span>`;
+
         if (!videoId) {
           div.classList.add("not-found");
-          div.innerHTML = `${serial}. ❌ Invalid link<br><a href="${url}" target="_blank">${url}</a>`;
+          div.innerHTML = `${serialHTML} ❌ Invalid link<br><a href="${url}" target="_blank">${url}</a>`;
         } else {
           const videoUrl = `https://youtu.be/${videoId}`;
           try {
@@ -220,13 +217,14 @@
 
             div.classList.add("found");
             div.innerHTML = `
-              ${serial}. ✅ <a href="${videoUrl}" target="_blank" style="color:#2ecc71; text-decoration:underline;">${channelTitle}</a><br>
+              ${serialHTML} ✅ 
+              <a href="${videoUrl}" target="_blank" style="color:#2ecc71; text-decoration:underline;">${channelTitle}</a><br>
               ⏱️ ${relativeTime}<br>
               <span style="color:#ffd700;cursor:pointer;text-decoration:underline;" onclick="showLikes(this, '${videoId}')">👆 Tap to view likes</span>
             `;
           } catch {
             div.classList.add("not-found");
-            div.innerHTML = `${serial}. ⚠️ Error checking<br><a href="${videoUrl}" target="_blank">${videoUrl}</a>`;
+            div.innerHTML = `${serialHTML} ⚠️ Error checking<br><a href="${videoUrl}" target="_blank">${videoUrl}</a>`;
           }
         }
 
@@ -236,11 +234,10 @@
       loader.style.display = "none";
     }
 
-    // 👍 Likes API
     async function showLikes(elem, videoId) {
       elem.textContent = "⏳ Loading likes...";
       try {
-        const likeAPI = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=AIzaSyDXbiFdiB7IzuuPqKrbSfdTg5CUurFknpo`; // Likes API
+        const likeAPI = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=AIzaSyDXbiFdiB7IzuuPqKrbSfdTg5CUurFknpo`;
         const res = await fetch(likeAPI);
         const data = await res.json();
         const likes = data.items?.[0]?.statistics?.likeCount || "0";
