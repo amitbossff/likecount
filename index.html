@@ -237,7 +237,7 @@
     async function showLikes(elem, videoId) {
       elem.textContent = "⏳ Loading likes...";
       try {
-        const likeAPI = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=AIzaSyC_PW7C_ZgD5wIJ_SzHyXNdEqp3hfwIs9g`;
+        const likeAPI = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=AIzaSyDXbiFdiB7IzuuPqKrbSfdTg5CUurFknpo`;
         const res = await fetch(likeAPI);
         const data = await res.json();
         if (data.items && data.items.length > 0) {
